@@ -1,0 +1,26 @@
+# Core Testing Framework
+playwright>=1.40.0
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-playwright>=0.4.0
+pytest-timeout>=2.1.0
+
+# Configuration & Data Management
+pyyaml>=6.0.0
+python-dotenv>=1.0.0
+
+# Reporting & Logging
+rich>=13.0.0
+
+# HTTP & API Testing
+requests>=2.31.0
+httpx>=0.25.0
+
+# Utilities
+click>=8.1.0
+jinja2>=3.1.0
+pydantic>=2.0.0
+
+# Development & Testing
+black>=23.0.0
+flake8>=6.0.0

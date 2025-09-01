@@ -1,0 +1,125 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+pom-base-structure
+	•	테스트 코드는 tests/, 페이지 객체는 pages/, 공통 컴포넌트는 components/, 헬퍼·유틸은 utils/로 폴더 분리 MUST.
+	•	각 페이지는 1파일 1클래스(또는 1모듈 1객체) 원칙 MUST.
+	•	공통 동작은 BasePage에 집약하고 상속/합성으로 재사용 SHOULD.
+	•	테스트 본문은 비즈니스 시나리오에 집중, 셀렉터/대기/저수준 동작은 페이지/컴포넌트에 캡슐화 MUST.
+
+selectors-strategy
+	•	셀렉터 우선순위 MUST: role/label(접근성) → data-testid → 안정적 CSS → 최후수단 XPath.
+	•	data-testid는 제품 코드에 도입 가능하면 MUST. 이름은 kebab-case로 일관 MUST.
+	•	텍스트 기반 셀렉터는 변동 가능 문구(로컬라이즈/마케팅 문구)에 의존하지 않도록 SHOULD.
+
+base-page-contract
+	•	BasePage는 최소 다음 인터페이스를 MUST 제공: goto(url|path), is_loaded(), wait_ready(), within(container)(선택), 공통 명시적 대기 헬퍼.
+	•	모든 페이지 객체는 is_loaded() or wait_ready()를 구현 MUST(헤더/핵심 엘리먼트 존재 확인).
+
+page-object-responsibility
+	•	페이지 객체는 행동(액션) 캡슐화 MUST: 입력/클릭/선택/네비게이션.
+	•	**검증(assertion)**은 테스트 또는 utils/assertions에서 수행 SHOULD.
+	•	페이지 상태 조회는 의미 있는 값으로 반환 SHOULD(예: get_error_message()).
+
+component-object-pattern
+	•	헤더, 사이드바, 모달, 테이블, 날짜피커 등은 컴포넌트 객체로 분리 SHOULD.
+	•	페이지는 컴포넌트를 합성해서 사용하고, 컴포넌트는 독립적으로 테스트 가능해야 함 MUST.
+
+method-naming-and-signatures
+	•	사용자 관점 의도 기반 네이밍 MUST: login_as(email, password), search_for(query), select_date(day).
+	•	한 메서드는 하나의 액션 또는 짧은 원자적 흐름만 처리 SHOULD.
+	•	상태 변화가 있는 메서드는 대기 완료 후 반환 MUST(다음 스텝에서 race condition 방지).
+
+synchronization-and-waits
+	•	하드 sleep 사용 금지 MUST NOT.
+	•	Playwright/WDIO 등 프레임워크의 자동 대기 + 명시적 wait 조합 MUST.
+	•	네비게이션/리스트 갱신/스피너 소멸 등 가시적 안정 조건을 wait_for_*로 표현 MUST.
+
+mobile-and-responsive
+	•	모바일·태블릿 뷰포트/디바이스 프리셋은 픽스처/파라미터로 주입 SHOULD.
+	•	똑같은 테스트를 데스크톱/모바일 둘 다 돌릴 경우, 셀렉터/레이아웃 차이를 페이지에서 흡수 SHOULD.
+
+data-and-fixtures
+	•	테스트 데이터는 픽스처/팩토리로 분리 MUST(하드코딩 최소화).
+	•	민감정보는 환경변수/시크릿에서 주입 MUST.
+	•	생성된 데이터는 테스트 종료 시 정리 SHOULD(또는 아이솔레이션된 환경 사용).
+
+error-handling-and-logging
+	•	사용자 시나리오 실패 지점에서 맥락 로그(현재 URL, 스크린샷, 콘솔/네트워크 로그) MUST 수집.
+	•	페이지/컴포넌트 메서드는 의미 있는 예외 메시지로 실패 원인을 노출 SHOULD.
+
+assertions-policy
+	•	UI 어서션은 사용자 관점 신호 기준 SHOULD(헤딩, 토스트, URL 패턴, 주요 위젯).
+	•	비즈니스 규칙은 도메인 어서션으로 명명 SHOULD(assert_order_total_is(…)).
+	•	테스트 본문에서 어서션은 최소·핵심만 유지, 나머지는 헬퍼로 위임 SHOULD.
+
+network-mocking-and-stubbing
+	•	외부 의존(서드파티, 지연 큰 API)은 모킹/스토빙 가능해야 함 SHOULD.
+	•	**E2E(실 API)**와 Stubbed E2E를 구분하는 테스트 태그/마커 MUST.
+
+state-isolation-and-parallelism
+	•	각 테스트는 독립적으로 실행 가능 MUST(순서 의존 금지).
+	•	병렬 실행 시 세션/스토리지/데이터 충돌 없도록 고유 프리픽스/아이솔레이션 전략 MUST.
+
+retries-and-flake-control
+	•	테스트 레벨 재시도는 일시적 환경 불안정에 한해 낮은 회수로 설정 SHOULD.
+	•	재시도가 잦은 케이스는 원인 분류 & 리팩터 MUST(대기/셀렉터/환경 개선).
+
+auth-flows
+	•	로그인은 UI 경유와 API 토큰 주입 두 가지 전략을 제공 SHOULD.
+	•	회귀군에서는 API 주입으로 속도 확보, 핵심 시나리오에서는 UI 로그인 검증 MUST.
+
+files-and-downloads
+	•	파일 업/다운로드는 OS 경로 의존 최소화 SHOULD.
+	•	업로드는 고정 샘플 파일 사용, 다운로드는 파일명 패턴/해시로 검증 SHOULD.
+
+accessibility-first
+	•	가능한 한 접근성 속성(role, label, name)을 추가하도록 제품에 피드백 MUST.
+	•	테스트 셀렉터는 접근성 기반을 우선 채택 MUST.
+
+naming-conventions
+	•	파일/클래스/메서드/테스트ID는 kebab-case(테스트ID), PascalCase(클래스), snake_case or camelCase(언어 컨벤션) 준수 MUST.
+	•	불분명한 이름 금지 MUST: click_button1() 대신 click_submit().
+
+page-navigation-and-urls
+	•	goto()는 상대 경로 또는 라우트 이름을 인자로 받아 환경별 베이스URL 차이를 흡수 SHOULD.
+	•	네비게이션 후 타겟 페이지의 ready 조건을 기다린 뒤 반환 MUST.
+
+table-and-list-handling
+	•	테이블/무한스크롤 목록은 가시 영역 동기화(로우 수, 로딩 스피너 종료) MUST.
+	•	정렬/필터는 현재 상태 읽기 → 액션 → 상태 갱신 확인의 3단계 패턴 MUST.
+
+dialogs-and-modals
+	•	모달/드롭다운/토스트는 열림/닫힘 상태를 명확히 판별하는 메서드 제공 MUST(is_open(), wait_closed()).
+	•	포커스 트랩/스크롤 락 등 상태 부작용도 검증 SHOULD.
+
+test-ids-policy
+	•	data-testid는 UI 텍스트 변경과 무관하게 안정성을 확보하므로 적극 사용 MUST.
+	•	data-testid 네이밍은 화면ID-컴포넌트-역할 형태 권장(예: login-form-email-input) SHOULD.
+
+api-service-layer
+	•	복잡한 비즈니스는 API 서비스 래이어로 분리 SHOULD(테스트에서 직접 API 호출 가능).
+	•	UI와 API를 조합한 하이브리드 시나리오 지원 SHOULD(사전 상태 준비/검증).
+
+reporting-and-artifacts
+	•	실패 시 스크린샷, HTML 스냅샷, 콘솔/네트워크 로그를 아티팩트로 MUST 보존.
+	•	CI에서 테스트 리포트(jUnit/Allure 등) 업로드 MUST.
+
+versioning-and-deprecation
+	•	페이지/컴포넌트의 중대한 셀렉터 변경은 deprecation 주석과 교체 가이드를 남길 것 SHOULD.
+	•	구버전 메서드는 한 릴리즈 동안만 유지 후 제거 SHOULD.
+
+anti-patterns
+	•	한 객체에 수십/수백 메서드 누적 금지 MUST NOT(컴포넌트 분리).
+	•	테스트마다 다른 어서션/분기 로직을 페이지 객체에 삽입 금지 MUST NOT.
+	•	글로벌 상태 공유로 순서 의존 발생 금지 MUST NOT.
+	•	불안정한 CSS 체이닝/텍스트 일치 셀렉터 남발 금지 MUST NOT.
+
+review-checklist
+	•	이 PR은 접근성/테스트ID 우선 셀렉터를 사용했는가?
+	•	하드 sleep 없음, ready 조건 명시했는가?
+	•	페이지/컴포넌트 책임 분리가 지켜졌는가?
+	•	테스트는 독립/병렬 안전한가?
+	•	실패 시 충분한 아티팩트가 남는가?

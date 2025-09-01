@@ -1,0 +1,126 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+Beamo Automated Testing Platform PRD
+1. 개요
+
+Beamo Portal 및 App(Web/Android/iOS)의 주요 사용자 흐름을 자동화 검증하기 위한 Python + Playwright + Appium 기반 E2E 테스트 스위트를 제공한다.
+이를 통해 QA 엔지니어와 개발팀은 환경별(Internal/Dev/Stage/Live) 핵심 시나리오를 빠르고 일관되게 검증할 수 있다.
+
+2. 목표
+
+수동 QA 시나리오 실행 시간을 70% 이상 단축한다.
+
+신규 기능 릴리즈 시 1시간 이내 스모크 테스트 완료를 보장한다.
+
+회귀 테스트 자동화를 통해 릴리즈 품질 안정성을 확보한다.
+
+환경별로 공통 스크립트 구조를 재사용하여 유지보수 비용 최소화한다.
+
+3. 주요 사용자
+
+QA 엔지니어
+
+개발자 (FE/BE, AOS/iOS)
+
+제품 관리자 (릴리즈 품질 확인 목적)
+
+4. 핵심 사용 시나리오
+
+QA 엔지니어가 Jenkins/GitHub Actions 또는 터미널 명령을 통해 자동화 테스트를 실행하면, 로그인 → 사이트 리스트 → 필터 → 서베이 리스트 → 3D 워크스페이스 → 태그/핀 검증 등 주요 플로우를 자동 실행하고 HTML 리포트를 확인한다.
+
+5. Pain Point & Value Proposition
+Pain Point	Value Proposition
+환경별 수동 QA 반복 → 시간/인력 소모	CI 연동 자동화로 한 번에 실행·검증
+브라우저/모바일 별 시나리오 재현 어려움	Playwright + Appium 기반 크로스플랫폼 테스트
+신규 기능 확장 시 코드 중복 증가	모듈화된 POM 구조로 재사용성 확보
+Live 환경에서 빠른 품질 확인 어려움	Synthetic Monitoring으로 즉각적인 알림/리포트
+6. 기능 범위
+6.1 필수 기능 (MVP)
+
+Portal & App 주요 사용자 흐름 E2E 자동화
+
+환경별 Config 지원(Internal/Dev/Stage/Live)
+
+Playwright HTML Reporter + 콘솔 로그 출력
+
+POM 기반 모듈화 구조
+
+실패 시 스크린샷/Trace/Network Log 자동 수집
+
+6.2 부가기능 (Nice-to-Have)
+
+Slack/Email 알림 연동
+
+크로스브라우저/멀티 디바이스 병렬 실행
+
+성능 스모크 테스트(k6/JMeter 연계)
+
+대시보드(테스트 통계, 실행 이력 관리)
+
+7. 제외 범위 (Out of Scope)
+
+장기 저장용 대시보드 및 품질 점수 관리 (추후)
+
+실고객 데이터 기반 테스트
+
+8. 기술 스택
+
+언어: Python 3.x
+
+웹 자동화: Playwright (Web, Mobile Web)
+
+앱 자동화: Appium (Android/iOS)
+
+CI/CD: Jenkins, GitHub Actions
+
+리포팅: Playwright Reporter, Allure (옵션)
+
+실행 환경: Docker 컨테이너 (로컬/CI 호환)
+
+9. 개발 전략
+
+MVP → 점진적 확장
+
+2주 스프린트 기반 애자일 적용
+
+우선순위: 스모크(P0) → 회귀(P1/P2) → 성능/보안
+
+10. 성공 지표 (KPIs)
+
+평균 스모크 테스트 실행 시간 < 10분
+
+Stage 환경 회귀 자동화 커버리지 ≥ 80%
+
+Live Synthetic 성공률 ≥ 99.5%
+
+주요 버그 검출률 ≥ 90%
+
+11. 일정(High-Level)
+주차	목표
+1주	요구사항 확정 & 프로젝트 세팅
+2‒3주	Portal/App 스모크 시나리오 개발
+4주	회귀 테스트 & 리포팅/알림 연동
+5주	Stage 베타 운영 & 피드백 반영
+6주	Live Synthetic 모니터링 도입
+12. 리스크 & 대응책
+
+환경별 API/DOM 차이 → Config/Profile 분리 & 공통 인터페이스화
+
+모바일 디바이스 다양성 → BrowserStack/실기기 병행 검증
+
+Flaky Test 증가 → 재시도/네트워크 안정화 유틸 적용
+
+13. 가정
+
+테스트용 계정/테넌트는 각 환경에 미리 세팅됨
+
+팀원은 Python/Playwright 기본 지식을 보유
+
+주요 기능의 DOM 구조는 큰 변경이 자주 발생하지 않음
+
+14. 승인
+
+Product Owner: ____ Date: ____

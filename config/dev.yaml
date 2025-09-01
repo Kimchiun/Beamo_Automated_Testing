@@ -1,0 +1,38 @@
+# Beamo Dev Environment Configuration
+environment: dev
+base_url: https://accounts.beamo.dev
+
+# Browser Configuration
+browser:
+  headless: false  # Dev에서는 브라우저를 보면서 디버깅
+  slow_mo: 1000    # 1초 딜레이로 동작 확인
+  timeout: 30000   # 30초 타임아웃
+
+# Test Data
+test_data:
+  valid_user:
+    email: "tmaster@3i.ai"
+    password: "1234@qwer"
+    user_id: "tmaster"  # 실제 테스트 계정
+  admin_user:
+    email: "admin@beamo.dev"
+    password: "admin1234"
+    user_id: "admin"
+
+# Test Configuration
+test_config:
+  screenshot_on_failure: true
+  video_recording: true
+  trace_recording: true
+  retry_count: 2
+
+# Reporting
+reporting:
+  output_dir: "reports/dev"
+  html_report: true
+  console_output: true
+
+# API Configuration
+api:
+  base_url: https://api.beamo.dev
+  timeout: 10000

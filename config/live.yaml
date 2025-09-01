@@ -1,0 +1,36 @@
+# Beamo Live Environment Configuration
+environment: live
+base_url: https://accounts.beamo.ai
+
+# Browser Configuration
+browser:
+  headless: true   # Live에서는 반드시 헤드리스 모드
+  slow_mo: 200     # 0.2초 딜레이 (빠른 실행)
+  timeout: 20000   # 20초 타임아웃 (빠른 실패)
+
+# Test Data
+test_data:
+  valid_user:
+    email: "test@beamo.ai"
+    password: "test1234"
+  admin_user:
+    email: "admin@beamo.ai"
+    password: "admin1234"
+
+# Test Configuration
+test_config:
+  screenshot_on_failure: true
+  video_recording: false  # Live에서는 비디오 녹화 비활성화
+  trace_recording: false  # Live에서는 트레이스 비활성화
+  retry_count: 1         # Live에서는 재시도 최소화
+
+# Reporting
+reporting:
+  output_dir: "reports/live"
+  html_report: true
+  console_output: true
+
+# API Configuration
+api:
+  base_url: https://api.beamo.ai
+  timeout: 5000   # Live에서는 빠른 타임아웃

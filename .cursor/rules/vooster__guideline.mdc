@@ -1,0 +1,200 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+# Code Guideline: Beamo Automated Testing Platform
+
+## 1. Project Overview
+
+This project provides a unified automated testing framework for **Beamo Portal and App (Web, Android, iOS)** using **Python, Playwright, and Appium**.  
+It aims to validate core user journeys (Login → Site List → Filter → Survey → 3D Workspace → Tag/Pin) consistently across multiple environments (Internal, Dev, Stage, Live).  
+The automation suite will be Dockerized for reproducibility and integrated into CI/CD pipelines.
+
+Key architectural decisions:
+
+*   **Python & Playwright**: For web and mobile web automation.
+*   **Appium**: For Android/iOS app E2E automation.
+*   **Docker**: For consistent execution across local/CI.
+*   **Modular POM Design**: Encapsulated page objects, reusable flows, and parameterized configs.
+
+---
+
+## 2. Core Principles
+
+*   **Cross-Platform Reliability**: Scripts must run on Web, Android, and iOS consistently.
+*   **Maintainability**: Modular POM structure to reduce maintenance costs.
+*   **Reusability**: Shared flows (login, navigation, filter) usable across environments.
+*   **Scalability**: Easy extension to new Beamo features (e.g., IoT, Category system).
+*   **Observability**: Failures produce actionable logs, screenshots, videos, and traces.
+
+---
+
+## 3. Language-Specific Guidelines
+
+### Python
+
+#### File Organization
+
+*   Separate directories for `pages/`, `flows/`, `fixtures/`, `utils/`, and `tests/`.
+*   One POM file per Beamo page/module (`site_map_list.py`, `pin_panel.py`).
+*   Test data stored in `fixtures/` with environment-specific configs.
+
+#### Imports
+
+*   Absolute imports for shared utils:  
+    `from utils.config_loader import load_env_config`
+*   Relative imports for same-package usage:  
+    `from .site_map_list import SiteMapListPage`
+*   Follow PEP8 import grouping (stdlib → third-party → local).
+
+#### Error Handling
+
+*   Wrap Playwright/Appium calls with retries for flaky network/UI.
+*   Use `logging` module for structured logs (`INFO`, `WARNING`, `ERROR`).
+*   Capture stack traces, screenshots, and network logs before re-raising exceptions.
+
+```python
+try:
+    await page.locator("data-testid=login-btn").click()
+except TimeoutError as e:
+    logging.error(f"[Stage][Login] Timeout during login: {e}")
+    await page.screenshot(path="artifacts/login_timeout.png")
+    raise
+Playwright (Web/Mobile Web)
+Use Page Object Model: each Portal screen = one POM class.
+
+Locators: Prefer data-testid → role → aria-label; avoid XPath.
+
+Wait for DOM idle/network settled before assertions.
+
+Tag tests with @smoke, @regression, @p0, @stage.
+
+python
+코드 복사
+class SiteMapListPage:
+    def __init__(self, page):
+        self.page = page
+        self.filter_button = "data-testid=site-filter-btn"
+
+    async def open_filter(self):
+        await self.page.locator(self.filter_button).click()
+Appium (Android/iOS)
+Keep locators stable using accessibility IDs where possible.
+
+Encapsulate mobile-only flows in flows/mobile/.
+
+Use device profiles for iOS/Android configs (devices.json).
+
+Record video/screenshots for failing tests automatically.
+
+Docker
+.dockerignore excludes caches, logs, venv/.
+
+Multi-stage builds (base Python + dependencies → slim runtime).
+
+Run under non-root user for security.
+
+Env vars configure environment (BEAMO_ENV=stage).
+
+YAML (Configs)
+One config file per environment: config.internal.yml, config.dev.yml, etc.
+
+Store test data (URLs, credentials, timeouts) in YAML.
+
+Keep configs declarative, no business logic inside.
+
+Validate configs on load.
+
+4. Code Style Rules
+MUST
+PEP8 compliance with Black/Flake8 enforcement.
+
+Docstrings for modules/classes/methods.
+
+Type hints in all function signatures.
+
+Logging via logging with consistent format [ENV][Module][Step].
+
+Keep test cases under 50 lines, delegate logic to POM/flows.
+
+Apply Single Responsibility Principle (SRP).
+
+python
+코드 복사
+async def test_login_smoke(beamo_portal):
+    """
+    Smoke test: Login and verify dashboard loaded
+    """
+    portal = beamo_portal
+    await portal.login("smoke_admin")
+    assert await portal.dashboard_visible()
+MUST NOT
+Duplicate test flows (reuse flows/).
+
+Hardcode credentials, URLs, or selectors.
+
+Swallow exceptions silently.
+
+Commit secrets or environment configs into repo.
+
+Use global mutable state.
+
+5. Architecture Patterns
+Domain-driven: Each Beamo module (SITE, SETTING, DATA, USER, SPACE) has its own POM & flow.
+
+Unidirectional data flow: Fixtures → Flows → POM → Assertions.
+
+DTOs: For passing structured data between layers (e.g., site profile).
+
+Interface-first: Public methods expose business actions, not DOM details.
+
+python
+코드 복사
+# GOOD: Flow encapsulating user journey
+class SurveyFlow:
+    async def open_and_verify_survey(self, portal, survey_name):
+        await portal.site_map_list.open()
+        await portal.site_map_list.select_survey(survey_name)
+        assert await portal.survey_detail.is_loaded()
+6. Test Tagging & Execution Strategy
+Tags:
+
+@smoke: minimal P0 scenarios (≤10 min)
+
+@regression: full regression suite
+
+@synthetic: read-only live monitoring tests
+
+Environments:
+
+Internal: unit/component tests
+
+Dev: smoke @p0
+
+Stage: regression @p0 @p1
+
+Live: read-only @synthetic
+
+7. CI/CD Integration
+GitHub Actions & Jenkins pipelines.
+
+Run smoke suite on every PR → Dev.
+
+Full regression nightly on Stage.
+
+Synthetic monitoring scheduled for Live.
+
+Upload artifacts (screenshots, videos, traces) to CI.
+
+Slack notifications for failures.
+
+yaml
+코드 복사
+
+---
+
+👉 이 문서를 그대로 `Beamo_Automated_testing` 리포에 `beamo__guideline.md` 같은 이름으로 넣으면,  
+앞서 만든 **Virtual Account Code Guideline**과 세트처럼 관리할 수 있습니다.  
+
+원하시면 제가 **파일 구조**(`vooster__...` 처럼)와 맞춰서 네이밍 규칙까지 설계해드릴까요?

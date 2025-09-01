@@ -1,0 +1,36 @@
+# Beamo Stage Environment Configuration
+environment: stage
+base_url: https://accounts.3inc.xyz
+
+# Browser Configuration
+browser:
+  headless: true   # Stage에서는 헤드리스 모드로 실행
+  slow_mo: 500     # 0.5초 딜레이
+  timeout: 30000   # 30초 타임아웃
+
+# Test Data
+test_data:
+  valid_user:
+    email: "test@3inc.xyz"
+    password: "test1234"
+  admin_user:
+    email: "admin@3inc.xyz"
+    password: "admin1234"
+
+# Test Configuration
+test_config:
+  screenshot_on_failure: true
+  video_recording: true
+  trace_recording: true
+  retry_count: 3
+
+# Reporting
+reporting:
+  output_dir: "reports/stage"
+  html_report: true
+  console_output: true
+
+# API Configuration
+api:
+  base_url: https://api.3inc.xyz
+  timeout: 10000
