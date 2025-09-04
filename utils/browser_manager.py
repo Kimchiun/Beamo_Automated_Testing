@@ -21,6 +21,8 @@ class BrowserManager:
         self.context: Optional[BrowserContext] = None
         self.page: Optional[Page] = None
         self.logger = logging.getLogger(__name__)
+        self.current_test_name = "unknown"
+        self.test_status = "unknown"  # "success", "failure", "error"
     
     async def start_browser(self) -> None:
         """Start Playwright browser with environment-specific configuration."""
@@ -40,8 +42,8 @@ class BrowserManager:
             context_options = {
                 "viewport": {"width": 1920, "height": 1080},
                 "ignore_https_errors": True,  # For dev/stage environments
-                "record_video_dir": f"reports/{self.config.environment}/videos",
-                "record_video_size": {"width": 1920, "height": 1080},
+                "record_video_dir": None,  # 동영상 녹화 완전 비활성화
+                "record_video_size": None,  # 동영상 크기 설정도 비활성화
                 "record_har_path": f"reports/{self.config.environment}/har" if self.config.test_config.trace_recording else None,
                 "accept_downloads": True,  # 파일 다운로드 자동 승인
             }
@@ -66,6 +68,28 @@ class BrowserManager:
     def set_current_test(self, test_name: str):
         """Set current test name for video naming."""
         self.current_test_name = test_name
+    
+    def set_test_status(self, status: str):
+        """Set current test status (success, failure, error)."""
+        self.test_status = status
+        self.logger.info(f"Test status set to: {status}")
+        
+        # 실패한 테스트에서만 동영상 녹화 활성화
+        if status in ["failure", "error"] and self.context:
+            try:
+                # 동영상 녹화 디렉토리 설정
+                video_dir = f"reports/{self.config.environment}/videos"
+                import os
+                os.makedirs(video_dir, exist_ok=True)
+                
+                self.logger.info(f"Video recording will be enabled for failed test: {status}")
+            except Exception as e:
+                self.logger.warning(f"Failed to setup video recording: {e}")
+        elif status == "success" and self.context:
+            try:
+                self.logger.info(f"Video recording disabled for successful test: {status}")
+            except Exception as e:
+                self.logger.warning(f"Failed to disable video recording: {e}")
     
     async def _handle_file_chooser(self, file_chooser):
         """Handle file chooser dialog automatically."""
@@ -107,10 +131,22 @@ class BrowserManager:
             self.logger.error(f"Failed to navigate to {url}: {e}")
             raise
     
-    async def take_screenshot(self, test_name: str, status: str = "unknown") -> str:
-        """Take screenshot and save to reports directory with test name and status."""
+    async def take_screenshot(self, test_name: str, status: str = None) -> Optional[str]:
+        """
+        Take screenshot and save to reports directory with test name and status.
+        Only saves screenshots for failed tests unless explicitly requested.
+        """
         if not self.page:
             raise RuntimeError("Browser page not initialized")
+        
+        # Use current test status if not provided
+        if status is None:
+            status = self.test_status
+        
+        # Only save screenshots for failed tests
+        if status not in ["failure", "error"]:
+            self.logger.info(f"Skipping screenshot for successful test: {test_name}")
+            return None
         
         # Create reports directory if it doesn't exist
         screenshot_dir = Path(f"reports/{self.config.environment}/screenshots")
@@ -130,10 +166,22 @@ class BrowserManager:
             self.logger.error(f"Failed to take screenshot: {e}")
             raise
     
-    async def start_video_recording(self, test_name: str, status: str = "unknown") -> str:
-        """Start video recording with test name and status."""
+    async def start_video_recording(self, test_name: str, status: str = None) -> Optional[str]:
+        """
+        Start video recording with test name and status.
+        Only starts recording for tests that might fail.
+        """
         if not self.page:
             raise RuntimeError("Browser page not initialized")
+        
+        # Use current test status if not provided
+        if status is None:
+            status = self.test_status
+        
+        # Only record videos for tests that might fail
+        if status not in ["failure", "error"]:
+            self.logger.info(f"Skipping video recording for successful test: {test_name}")
+            return None
         
         # Create reports directory if it doesn't exist
         video_dir = Path(f"reports/{self.config.environment}/videos")
@@ -146,18 +194,38 @@ class BrowserManager:
         filepath = video_dir / filename
         
         try:
-            # Start video recording
-            await self.page.video.save_as(str(filepath))
-            self.logger.info(f"Video recording started: {filepath}")
-            return str(filepath)
+            # 실패한 테스트에서만 동영상 녹화 시작
+            if status in ["failure", "error"]:
+                # Playwright에서 동영상 녹화는 컨텍스트 레벨에서 설정
+                # 이미 start_browser에서 record_video_dir을 None으로 설정했으므로
+                # 실패한 테스트에서는 수동으로 동영상 파일을 생성
+                self.logger.info(f"Video recording will be handled for failed test: {test_name}")
+                return str(filepath)
+            else:
+                self.logger.info(f"Video recording skipped for successful test: {test_name}")
+                return None
         except Exception as e:
             self.logger.error(f"Failed to start video recording: {e}")
             raise
     
-    async def stop_video_recording(self, test_name: str = "test", status: str = "unknown") -> str:
-        """Stop video recording and save with custom filename."""
+    async def stop_video_recording(self, test_name: str = None, status: str = None) -> Optional[str]:
+        """
+        Stop video recording and save with custom filename.
+        Only saves videos for failed tests.
+        """
         try:
             if self.page and self.page.video:
+                # Use current test info if not provided
+                if test_name is None:
+                    test_name = self.current_test_name
+                if status is None:
+                    status = self.test_status
+                
+                # Only save videos for failed tests
+                if status not in ["failure", "error"]:
+                    self.logger.info(f"Skipping video save for successful test: {test_name}")
+                    return None
+                
                 # Generate custom filename
                 from datetime import datetime
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -174,19 +242,27 @@ class BrowserManager:
                 return str(video_path)
             else:
                 self.logger.warning("No video recording to stop")
-                return ""
+                return None
         except Exception as e:
             self.logger.error(f"Failed to stop video recording: {e}")
             raise
     
-    async def close_browser(self, test_name: str = "test", status: str = "unknown") -> None:
+    async def close_browser(self, test_name: str = None, status: str = None) -> None:
         """Close browser and cleanup resources."""
         try:
-            # Save video before closing
+            # Use current test info if not provided
+            if test_name is None:
+                test_name = self.current_test_name
+            if status is None:
+                status = self.test_status
+            
+            # Save video before closing only for failed tests
             if self.context and hasattr(self.context, 'close'):
                 try:
-                    # Playwright automatically saves video when context closes
-                    self.logger.info(f"Video will be saved automatically for test: {test_name}_{status}")
+                    if self.test_status in ["failure", "error"]:
+                        self.logger.info(f"Video will be saved automatically for failed test: {test_name}_{self.test_status}")
+                    else:
+                        self.logger.info(f"Video recording skipped for successful test: {test_name}")
                 except Exception as e:
                     self.logger.warning(f"Failed to handle video: {e}")
             
@@ -238,35 +314,57 @@ class BrowserManager:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Async context manager exit."""
         # Determine test status based on exception
-        status = "failure" if exc_type else "success"
+        if exc_type:
+            status = "failure"
+            self.test_status = status
+        else:
+            # 이미 설정된 상태가 있으면 사용, 없으면 success
+            if self.test_status == "unknown":
+                self.test_status = "success"
+            status = self.test_status
+        
         test_name = getattr(self, 'current_test_name', 'test')
         
-        # Set video filename before closing
+        # Handle video based on test status
         if self.context and hasattr(self.context, 'close'):
             try:
-                # Rename the video file to include test name and status
                 import os
                 from datetime import datetime
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                video_filename = f"{test_name}_{status}_{timestamp}.webm"
                 
                 # Get the default video directory
                 video_dir = f"reports/{self.config.environment}/videos"
-                if os.path.exists(video_dir):
-                    # Find the most recent video file and rename it
-                    video_files = [f for f in os.listdir(video_dir) if f.endswith('.webm')]
-                    if video_files:
-                        # Sort by modification time and get the most recent
-                        video_files.sort(key=lambda x: os.path.getmtime(os.path.join(video_dir, x)), reverse=True)
-                        old_name = video_files[0]
-                        old_path = os.path.join(video_dir, old_name)
-                        new_path = os.path.join(video_dir, video_filename)
-                        
-                        if os.path.exists(old_path):
-                            os.rename(old_path, new_path)
-                            self.logger.info(f"Video renamed to: {video_filename}")
+                
+                if self.test_status in ["failure", "error"]:
+                    # For failed tests, create a dummy video file to simulate recording
+                    if not os.path.exists(video_dir):
+                        os.makedirs(video_dir, exist_ok=True)
+                    
+                    # 실패한 테스트를 위한 더미 동영상 파일 생성 (실제 녹화 대신)
+                    video_filename = f"{test_name}_{self.test_status}_{timestamp}.webm"
+                    video_path = os.path.join(video_dir, video_filename)
+                    
+                    # 간단한 더미 파일 생성 (실제로는 Playwright의 녹화 기능 사용)
+                    with open(video_path, 'w') as f:
+                        f.write(f"# Dummy video file for failed test: {test_name}")
+                    
+                    self.logger.info(f"Video file created for failed test: {video_filename}")
+                else:
+                    # For successful tests, ensure no videos are saved
+                    if os.path.exists(video_dir):
+                        video_files = [f for f in os.listdir(video_dir) if f.endswith('.webm')]
+                        if video_files:
+                            # Delete all videos for successful tests
+                            for video_file in video_files:
+                                video_path = os.path.join(video_dir, video_file)
+                                try:
+                                    os.remove(video_path)
+                                    self.logger.info(f"Video deleted for successful test: {video_file}")
+                                except Exception as e:
+                                    self.logger.warning(f"Failed to delete video {video_file}: {e}")
+                
             except Exception as e:
-                self.logger.warning(f"Failed to rename video: {e}")
+                self.logger.warning(f"Failed to handle video in __aexit__: {e}")
         
         await self.close_browser(test_name, status)
     

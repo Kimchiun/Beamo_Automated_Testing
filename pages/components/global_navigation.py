@@ -205,6 +205,88 @@ class GlobalNavigation:
             self.logger.error(f"Failed to click settings: {e}")
             raise
     
+    async def click_gear_settings(self) -> None:
+        """Click gear settings button (톱니바퀴 설정 버튼)."""
+        try:
+            # 여러 방법으로 톱니바퀴 설정 버튼 찾기
+            gear_selectors = [
+                self.selectors["gear_settings"],
+                self.selectors["gear_icon"],
+                self.selectors["gear_button"],
+                self.selectors["gear_link"],
+                "button:has-text('⚙️')",
+                "button:has-text('🔧')",
+                "a:has-text('⚙️')",
+                "a:has-text('🔧')",
+                "[class*='gear']",
+                "[class*='cog']",
+                "[class*='settings']",
+                "[class*='config']"
+            ]
+            
+            gear_found = False
+            for selector in gear_selectors:
+                try:
+                    gear_elem = await self.page.query_selector(selector)
+                    if gear_elem and await gear_elem.is_visible():
+                        await gear_elem.click()
+                        self.logger.info(f"Clicked gear settings button using selector: {selector}")
+                        gear_found = True
+                        break
+                except Exception:
+                    continue
+            
+            if not gear_found:
+                # 텍스트 기반으로 찾기
+                text_selectors = [
+                    "button:has-text('설정')",
+                    "button:has-text('Settings')",
+                    "button:has-text('Config')",
+                    "a:has-text('설정')",
+                    "a:has-text('Settings')",
+                    "a:has-text('Config')"
+                ]
+                
+                for selector in text_selectors:
+                    try:
+                        text_elem = await self.page.query_selector(selector)
+                        if text_elem and await text_elem.is_visible():
+                            await text_elem.click()
+                            self.logger.info(f"Clicked gear settings button using text selector: {selector}")
+                            gear_found = True
+                            break
+                    except Exception:
+                        continue
+            
+            if not gear_found:
+                raise Exception("Gear settings button not found")
+                
+        except Exception as e:
+            self.logger.error(f"Failed to click gear settings: {e}")
+            raise
+    
+    async def is_gear_settings_visible(self) -> bool:
+        """Check if gear settings button is visible."""
+        try:
+            gear_selectors = [
+                self.selectors["gear_settings"],
+                self.selectors["gear_icon"],
+                self.selectors["gear_button"],
+                self.selectors["gear_link"]
+            ]
+            
+            for selector in gear_selectors:
+                try:
+                    gear_elem = await self.page.query_selector(selector)
+                    if gear_elem and await gear_elem.is_visible():
+                        return True
+                except Exception:
+                    continue
+            
+            return False
+        except Exception:
+            return False
+    
     async def click_help(self) -> None:
         """Click help menu."""
         try:

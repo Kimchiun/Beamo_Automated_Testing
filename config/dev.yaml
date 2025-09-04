@@ -32,6 +32,15 @@ reporting:
   html_report: true
   console_output: true
 
+# Email Configuration
+email:
+  smtp_server: "smtp.gmail.com"
+  smtp_port: 587
+  sender_email: "your-email@gmail.com"  # Gmail 계정으로 변경 필요
+  sender_password: "your-app-password"   # Gmail 앱 비밀번호로 변경 필요
+  recipient_email: "steve.kim@3i.ai"
+  send_on_completion: true
+
 # API Configuration
 api:
   base_url: https://api.beamo.dev

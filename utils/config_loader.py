@@ -38,6 +38,16 @@ class ReportingConfig(BaseModel):
     console_output: bool = True
 
 
+class EmailConfig(BaseModel):
+    """Email configuration model."""
+    smtp_server: str = "smtp.gmail.com"
+    smtp_port: int = 587
+    sender_email: Optional[str] = None
+    sender_password: Optional[str] = None
+    recipient_email: str = "steve.kim@3i.ai"
+    send_on_completion: bool = True
+
+
 class APIConfig(BaseModel):
     """API configuration model."""
     base_url: str
@@ -53,6 +63,7 @@ class EnvironmentConfig(BaseModel):
     test_config: TestConfig
     reporting: ReportingConfig
     api: APIConfig
+    email: Optional[EmailConfig] = None
 
 
 class ConfigLoader:
