@@ -130,8 +130,14 @@ async def test_add_plan_complete_flow(environment: str = "dev"):
             await site_detail_page.upload_plan_file(sample_file_path)
             print("✅ 파일 업로드 성공")
             
-            # 모달 다이얼로그가 나타날 때까지 대기
-            await asyncio.sleep(3)
+            # 모달 다이얼로그가 나타날 때까지 대기(하드 슬립 제거)
+            try:
+                await browser_manager.page.wait_for_selector(
+                    ".el-dialog:has-text('Each image will be added as a single plan'), .el-dialog__body",
+                    timeout=10000
+                )
+            except Exception:
+                print("⚠️ Add Plan 모달 가시성 대기 타임아웃 - 계속 진행")
             
             # 모달 다이얼로그에서 "Add Plan" 버튼 클릭
             print("\n📋 3-1. Add Plan 모달에서 최종 확인")
@@ -148,8 +154,14 @@ async def test_add_plan_complete_flow(environment: str = "dev"):
                     print("\n📋 3-2. Add Plan 성공 확인")
                     print("-" * 30)
                     
-                    # Survey creation modal이 나타날 때까지 대기
-                    await asyncio.sleep(5)
+                    # Survey creation modal이 나타날 때까지 대기(하드 슬립 제거)
+                    try:
+                        await browser_manager.page.wait_for_selector(
+                            ".el-dialog:has-text('Create a new survey'), .create-survey-dialog",
+                            timeout=15000
+                        )
+                    except Exception:
+                        print("⚠️ 'Create a new survey' 모달 대기 타임아웃")
                     
                     try:
                         # "Create a new survey" 모달이 나타나는지 확인
@@ -192,12 +204,12 @@ async def test_add_plan_complete_flow(environment: str = "dev"):
         print("-" * 30)
         
         try:
-            # 파일 업로드 후 페이지 상태 확인
-            await asyncio.sleep(3)  # 파일 처리 대기
+            # 파일 업로드 후 페이지 상태 확인(하드 슬립 제거)
+            await browser_manager.page.wait_for_load_state("networkidle", timeout=15000)
             
             # 페이지 새로고침하여 변경사항 확인
             await browser_manager.page.reload()
-            await asyncio.sleep(2)
+            await browser_manager.page.wait_for_load_state("networkidle", timeout=10000)
             
             print("✅ 페이지 새로고침 완료")
             print("✅ 파일 업로드 처리 완료")

@@ -487,17 +487,29 @@ class DashboardPage:
             return False
     
     async def search_and_click_site(self, site_name: str) -> bool:
-        """Search for a site and click on it."""
+        """Search for a site and click on it (no hard sleep)."""
         try:
             # 검색 실행
             await self.search_sites(site_name)
-            await asyncio.sleep(2)  # 검색 결과 로딩 대기
+            # 검색 결과가 나타날 때까지 대기
+            try:
+                await self.page.wait_for_selector(
+                    f"{self.selectors['search_result_item']}, .building",
+                    timeout=10000
+                )
+            except Exception:
+                self.logger.warning("Search results not visible within timeout")
             
             # 검색 결과에서 사이트 클릭
             success = await self.click_search_result_by_name(site_name)
             
             if success:
-                await asyncio.sleep(3)  # 사이트 페이지 로딩 대기
+                # 사이트 상세 화면의 핵심 요소가 나타날 때까지 대기
+                await self.page.wait_for_load_state("networkidle", timeout=15000)
+                await self.page.wait_for_selector(
+                    ".site-profile, .site-name, .site-title, .control-panel__content, .viewer-controls",
+                    timeout=15000
+                )
                 return True
             else:
                 return False
@@ -552,7 +564,11 @@ class DashboardPage:
                 if buildings and len(buildings) > 0:
                     await buildings[0].click()
                     self.logger.info("✅ .building 셀렉터로 사이트 클릭 성공")
-                    await asyncio.sleep(3)
+                    await self.page.wait_for_load_state("networkidle", timeout=15000)
+                    await self.page.wait_for_selector(
+                        ".site-profile, .site-name, .site-title, .control-panel__content, .viewer-controls",
+                        timeout=15000
+                    )
                     return True
             except Exception as e:
                 self.logger.warning(f"⚠️ .building 방법 실패: {e}")
@@ -563,7 +579,11 @@ class DashboardPage:
                 if addresses and len(addresses) > 0:
                     await addresses[0].click()
                     self.logger.info("✅ .building-address 셀렉터로 사이트 클릭 성공")
-                    await asyncio.sleep(3)
+                    await self.page.wait_for_load_state("networkidle", timeout=15000)
+                    await self.page.wait_for_selector(
+                        ".site-profile, .site-name, .site-title, .control-panel__content, .viewer-controls",
+                        timeout=15000
+                    )
                     return True
             except Exception as e:
                 self.logger.warning(f"⚠️ .building-address 방법 실패: {e}")
@@ -574,7 +594,11 @@ class DashboardPage:
                 if cards and len(cards) > 0:
                     await cards[0].click()
                     self.logger.info("✅ .el-card 셀렉터로 사이트 클릭 성공")
-                    await asyncio.sleep(3)
+                    await self.page.wait_for_load_state("networkidle", timeout=15000)
+                    await self.page.wait_for_selector(
+                        ".site-profile, .site-name, .site-title, .control-panel__content, .viewer-controls",
+                        timeout=15000
+                    )
                     return True
             except Exception as e:
                 self.logger.warning(f"⚠️ .el-card 방법 실패: {e}")
@@ -585,7 +609,11 @@ class DashboardPage:
                 if site_items and len(site_items) > 0:
                     await site_items[0].click()
                     self.logger.info("✅ .site-item 셀렉터로 사이트 클릭 성공")
-                    await asyncio.sleep(3)
+                    await self.page.wait_for_load_state("networkidle", timeout=15000)
+                    await self.page.wait_for_selector(
+                        ".site-profile, .site-name, .site-title, .control-panel__content, .viewer-controls",
+                        timeout=15000
+                    )
                     return True
             except Exception as e:
                 self.logger.warning(f"⚠️ .site-item 방법 실패: {e}")
@@ -596,7 +624,11 @@ class DashboardPage:
                 if list_items and len(list_items) > 0:
                     await list_items[0].click()
                     self.logger.info("✅ .list-item 셀렉터로 사이트 클릭 성공")
-                    await asyncio.sleep(3)
+                    await self.page.wait_for_load_state("networkidle", timeout=15000)
+                    await self.page.wait_for_selector(
+                        ".site-profile, .site-name, .site-title, .control-panel__content, .viewer-controls",
+                        timeout=15000
+                    )
                     return True
             except Exception as e:
                 self.logger.warning(f"⚠️ .list-item 방법 실패: {e}")
@@ -644,7 +676,11 @@ class DashboardPage:
                         }}
                     """)
                     self.logger.info(f"✅ JavaScript로 {clickable_elements['selector']} 클릭 성공")
-                    await asyncio.sleep(3)
+                    await self.page.wait_for_load_state("networkidle", timeout=15000)
+                    await self.page.wait_for_selector(
+                        ".site-profile, .site-name, .site-title, .control-panel__content, .viewer-controls",
+                        timeout=15000
+                    )
                     return True
                     
             except Exception as e:
@@ -655,14 +691,17 @@ class DashboardPage:
                 self.logger.info("🔄 페이지 새로고침 후 재시도...")
                 await self.page.reload()
                 await self.page.wait_for_load_state("networkidle", timeout=10000)
-                await asyncio.sleep(2)
                 
                 # 새로고침 후 다시 .building 시도
                 buildings = await self.page.query_selector_all(".building")
                 if buildings and len(buildings) > 0:
                     await buildings[0].click()
                     self.logger.info("✅ 새로고침 후 .building 셀렉터로 사이트 클릭 성공")
-                    await asyncio.sleep(3)
+                    await self.page.wait_for_load_state("networkidle", timeout=15000)
+                    await self.page.wait_for_selector(
+                        ".site-profile, .site-name, .site-title, .control-panel__content, .viewer-controls",
+                        timeout=15000
+                    )
                     return True
                     
             except Exception as e:
