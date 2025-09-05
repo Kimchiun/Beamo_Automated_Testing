@@ -629,6 +629,7 @@ class SiteDetailPage:
                 
                 # 추가 대기
                 await asyncio.sleep(3)
+                self.logger.info("About to return True from click_add_plan_submit (JavaScript path)")
                 return True
                 
             except Exception as js_error:
@@ -643,6 +644,7 @@ class SiteDetailPage:
                     
                     # 모달이 닫힐 때까지 대기
                     await asyncio.sleep(3)
+                    self.logger.info("About to return True from click_add_plan_submit (normal click path)")
                     return True
                 else:
                     self.logger.warning("Add Plan submit button not found in modal")
@@ -650,6 +652,84 @@ class SiteDetailPage:
                 
         except Exception as e:
             self.logger.error(f"Failed to click Add Plan submit: {e}")
+            return False
+
+    async def wait_for_plan_creation_completion(self, max_wait_time: int = 120) -> bool:
+        """플랜 생성 완료까지 대기 (요소가 실제로 로드되면 동작)"""
+        try:
+            self.logger.info("Waiting for plan creation completion...")
+            
+            # 최대 대기 시간 (초 단위)
+            start_time = asyncio.get_event_loop().time()
+            
+            while (asyncio.get_event_loop().time() - start_time) < max_wait_time:
+                try:
+                    # 1. 서베이 생성 모달이 나타났는지 확인
+                    survey_modal = await self.page.query_selector(self.selectors["survey_creation_modal"])
+                    if survey_modal and await survey_modal.is_visible():
+                        self.logger.info("Survey creation modal appeared - plan creation completed!")
+                        return True
+                    
+                    # 2. New Survey 버튼이 나타났는지 확인
+                    new_survey_btn = await self.page.query_selector(self.selectors["new_survey_button"])
+                    if new_survey_btn and await new_survey_btn.is_visible():
+                        self.logger.info("New Survey button appeared - plan creation completed!")
+                        return True
+                    
+                    # 3. 페이지에서 "New survey" 텍스트가 포함된 버튼이 나타났는지 확인
+                    all_buttons = await self.page.query_selector_all("button")
+                    for button in all_buttons:
+                        try:
+                            button_text = await button.text_content()
+                            if button_text and "new survey" in button_text.lower():
+                                if await button.is_visible():
+                                    self.logger.info("New Survey button found via text search - plan creation completed!")
+                                    self.logger.info("About to return True from wait_for_plan_creation_completion")
+                                    return True
+                        except Exception:
+                            continue
+                    
+                    # 4. 성공 메시지나 알림이 나타났는지 확인
+                    success_elements = await self.page.query_selector_all("[class*='success'], [class*='Success'], [class*='message'], [class*='alert']")
+                    for element in success_elements:
+                        try:
+                            if await element.is_visible():
+                                element_text = await element.text_content()
+                                if element_text and any(keyword in element_text.lower() for keyword in ['success', 'completed', 'created', 'added']):
+                                    self.logger.info(f"Success message appeared: {element_text} - plan creation completed!")
+                                    return True
+                        except Exception:
+                            continue
+                    
+                    # 5. 로딩 상태가 완료되었는지 확인
+                    loading_masks = await self.page.query_selector_all(".el-loading-mask, [class*='loading'], [class*='spinner']")
+                    loading_active = False
+                    for loading in loading_masks:
+                        try:
+                            if await loading.is_visible():
+                                loading_active = True
+                                break
+                        except Exception:
+                            continue
+                    
+                    if not loading_active:
+                        # 로딩이 완료되었지만 아직 요소가 나타나지 않았다면 잠시 대기
+                        await asyncio.sleep(1)
+                        continue
+                    
+                    # 로딩 중이면 잠시 대기
+                    await asyncio.sleep(2)
+                    
+                except Exception as e:
+                    self.logger.debug(f"Element check iteration error: {e}")
+                    await asyncio.sleep(1)
+                    continue
+            
+            self.logger.warning(f"Plan creation completion not confirmed within {max_wait_time} seconds")
+            return False
+            
+        except Exception as e:
+            self.logger.error(f"Error waiting for plan creation completion: {e}")
             return False
     
     # Survey creation modal 관련 메서드들 (Add Plan 성공 후)

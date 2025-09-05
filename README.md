@@ -280,30 +280,6 @@ test_config:
   timeout: 600  # 10분으로 증가
 ```
 
-## 📚 추가 문서
-
-- **GMAIL_SETUP_GUIDE.md**: Gmail 앱 비밀번호 설정 가이드
-- **TRD.md**: 기술 요구사항 문서
-- **PRD.md**: 제품 요구사항 문서
-
-## 🤝 기여하기
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📄 라이선스
-
-이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 `LICENSE` 파일을 참조하세요.
-
-## 📞 지원
-
-- **이슈 리포트**: GitHub Issues 사용
-- **문서**: README.md 및 가이드 문서 참조
-- **팀 연락**: steve.kim@3i.ai
-
 ---
 
 **Beamo Automated Testing Platform** - 빠르고 안정적인 E2E 테스트 자동화 🚀
