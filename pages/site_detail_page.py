@@ -365,18 +365,23 @@ class SiteDetailPage:
             return ""
     
     async def take_screenshot(self, test_name: str = "site_detail", status: str = "unknown") -> str:
-        """Take screenshot of site detail page with test name and status."""
+        """Take screenshot only for failed/error states to align with artifact policy."""
         try:
+            # 성공/미확정 상태는 캡처 건너뜀
+            if status not in ("failure", "error"):
+                self.logger.info(f"Skipping screenshot for status '{status}': {test_name}")
+                return ""
+
             import os
             from datetime import datetime
             screenshot_dir = f"reports/{self.config.environment}/screenshots"
             os.makedirs(screenshot_dir, exist_ok=True)
-            
+
             # Generate filename with test name, status, and timestamp
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"{test_name}_{status}_{timestamp}.png"
             filepath = os.path.join(screenshot_dir, filename)
-            
+
             await self.page.screenshot(path=filepath)
             self.logger.info(f"Screenshot saved: {filepath}")
             return filepath

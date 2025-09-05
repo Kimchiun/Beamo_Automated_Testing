@@ -75,7 +75,7 @@ async def test_add_plan_complete_flow(environment: str = "dev"):
         await dashboard_page.take_dashboard_screenshot("add_plan_debug", "success")
         print("📸 대시보드 스크린샷 저장됨")
         
-        # 강력한 사이트 클릭 메서드 사용
+        # 사이트 클릭 메서드 사용
         print("📝 첫 번째 사이트 클릭 시도...")
         site_click_success = await dashboard_page.click_first_available_site()
         
