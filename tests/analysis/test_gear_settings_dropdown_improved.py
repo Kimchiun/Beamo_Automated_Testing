@@ -47,7 +47,7 @@ async def test_gear_settings_dropdown_improved(environment: str = "dev"):
         await login_page.navigate_to_login()
         await login_page.wait_for_page_load()
         
-        space_id = "d-ge-eric"
+        space_id = "d-ge-ro"
         email = config.test_data.valid_user["email"]
         password = config.test_data.valid_user["password"]
         

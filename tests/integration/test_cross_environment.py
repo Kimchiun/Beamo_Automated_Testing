@@ -55,7 +55,7 @@ async def test_login_across_environments():
                 await login_page.wait_for_page_load()
                 
                 # 로그인 시도
-                space_id = "d-ge-eric"  # Dev 환경용 Space ID
+                space_id = "d-ge-ro"  # Dev 환경용 Space ID
                 email = config.test_data.valid_user["email"]
                 password = config.test_data.valid_user["password"]
                 

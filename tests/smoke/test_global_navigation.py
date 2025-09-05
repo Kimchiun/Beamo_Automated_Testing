@@ -48,7 +48,7 @@ async def test_global_navigation(environment: str = "dev"):
         await login_page.navigate_to_login()
         await login_page.wait_for_page_load()
         
-        space_id = "d-ge-eric"
+        space_id = "d-ge-ro"
         email = config.test_data.valid_user["email"]
         password = config.test_data.valid_user["password"]
         

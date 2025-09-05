@@ -28,7 +28,7 @@ class LoginPage:
             "remember_me_checkbox": "input[type='checkbox']",
             "final_login_button": "button[type='submit']",
             
-            # 새로운 1단계 로그인 (d-ge-eric)
+            # 새로운 1단계 로그인 (d-ge-ro)
             "user_id_input": "input[name='userId']",
             "login_button": "button[type='submit']",
             

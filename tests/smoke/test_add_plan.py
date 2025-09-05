@@ -55,7 +55,7 @@ async def test_add_plan_complete_flow(environment: str = "dev"):
         await login_page.navigate_to_login()
         await login_page.wait_for_page_load()
         
-        space_id = "d-ge-eric"
+        space_id = "d-ge-ro"
         email = config.test_data.valid_user["email"]
         password = config.test_data.valid_user["password"]
         
@@ -251,7 +251,7 @@ async def test_add_plan_dialog_elements(environment: str = "dev"):
         await login_page.navigate_to_login()
         await login_page.wait_for_page_load()
         
-        space_id = "d-ge-eric"
+        space_id = "d-ge-ro"
         email = config.test_data.valid_user["email"]
         password = config.test_data.valid_user["password"]
         

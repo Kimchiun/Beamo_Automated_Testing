@@ -50,7 +50,7 @@ async def test_site_detail_pom_simple(environment: str = "dev"):
         await login_page.wait_for_page_load()
         
         # 로그인 실행
-        space_id = "d-ge-eric"
+        space_id = "d-ge-ro"
         email = config.test_data.valid_user["email"]
         password = config.test_data.valid_user["password"]
         
