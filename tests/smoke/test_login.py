@@ -76,7 +76,7 @@ class TestLoginSmoke:
             
             # Perform 3-step login
             await login_page.login(
-                "d-ge-ro",  # 스페이스 ID
+                "d-ge-pr",  # 스페이스 ID
                 test_data.valid_user["email"],
                 test_data.valid_user["password"]
             )

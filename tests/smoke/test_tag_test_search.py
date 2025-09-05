@@ -58,7 +58,7 @@ class TestTagTestSearch:
             await login_page.navigate_to_login()
             
             # 로그인 정보로 로그인
-            space_id = "d-ge-ro"  # Dev 환경 스페이스 ID
+            space_id = "d-ge-pr"  # Dev 환경 스페이스 ID
             await login_page.login(
                 space_id=space_id,
                 email=config.test_data.valid_user["email"],

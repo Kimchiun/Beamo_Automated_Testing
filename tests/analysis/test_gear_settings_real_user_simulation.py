@@ -36,7 +36,7 @@ async def test_gear_settings_real_user_simulation(environment: str = "dev"):
         await browser_manager.page.screenshot(path="reports/dev/screenshots/real_user_login_before.png")
         
         # 4. 로그인 수행
-        space_id = "d-ge-ro"
+        space_id = "d-ge-pr"
         email = config.test_data.valid_user["email"]
         password = config.test_data.valid_user["password"]
         

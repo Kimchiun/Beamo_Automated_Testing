@@ -25,7 +25,7 @@ async def test_gear_settings_menu_items_click(environment: str = "dev"):
         await login_page.navigate_to_login()
         await login_page.wait_for_page_load()
         
-        space_id = "d-ge-ro"
+        space_id = "d-ge-pr"
         email = config.test_data.valid_user["email"]
         password = config.test_data.valid_user["password"]
         
@@ -96,7 +96,7 @@ async def test_gear_settings_menu_items_click(environment: str = "dev"):
                     user_management_items.append((item, text_clean))
                 elif text_clean in ["Overview", "Shared Survey", "Recovery"]:
                     data_management_items.append((item, text_clean))
-                elif text_clean in ["Profile", "d-ge-lg", "d-ge-ro", "d-ge-es", "d-ge-pr", "Log out"]:
+                elif text_clean in ["Profile", "d-ge-lg", "d-ge-pr", "d-ge-es", "d-ge-pr", "Log out"]:
                     profile_items.append((item, text_clean))
             except Exception as e:
                 continue

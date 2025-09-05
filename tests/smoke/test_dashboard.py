@@ -52,7 +52,7 @@ async def test_dashboard_functions(environment: str = "dev"):
         await login_page.wait_for_page_load()
         
         # 3단계 로그인 실행
-        space_id = "d-ge-ro"
+        space_id = "d-ge-pr"
         email = config.test_data.valid_user["email"]
         password = config.test_data.valid_user["password"]
         

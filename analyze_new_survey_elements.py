@@ -29,7 +29,7 @@ async def analyze_new_survey_elements():
         await login_page.navigate_to_login()
         await login_page.wait_for_page_load()
         
-        space_id = "d-ge-ro"
+        space_id = "d-ge-pr"
         email = config.test_data.valid_user["email"]
         password = config.test_data.valid_user["password"]
         

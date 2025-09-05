@@ -63,7 +63,7 @@ async def test_gallery_image_upload_complete_flow(environment: str = "dev"):
         await login_page.navigate_to_login()
         await login_page.wait_for_page_load()
         
-        space_id = "d-ge-ro"
+        space_id = "d-ge-pr"
         email = config.test_data.valid_user["email"]
         password = config.test_data.valid_user["password"]
         
@@ -182,7 +182,7 @@ async def test_gallery_image_dialog_elements(environment: str = "dev"):
         await login_page.wait_for_page_load()
         
         # 3단계 로그인 실행
-        space_id = "d-ge-ro"
+        space_id = "d-ge-pr"
         email = config.test_data.valid_user["email"]
         password = config.test_data.valid_user["password"]
         
@@ -273,7 +273,7 @@ async def test_gallery_image_verification(environment: str = "dev"):
         await login_page.wait_for_page_load()
         
         # 3단계 로그인 실행
-        space_id = "d-ge-ro"
+        space_id = "d-ge-pr"
         email = config.test_data.valid_user["email"]
         password = config.test_data.valid_user["password"]
         
