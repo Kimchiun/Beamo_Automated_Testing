@@ -107,7 +107,14 @@ async def test_add_plan_and_create_survey_flow(environment: str = "dev"):
                     print("\n📋 2단계: Add Plan 성공 확인")
                     print("-" * 30)
                     
-                    await asyncio.sleep(5)  # Wait for survey modal to appear
+                    # Wait for survey modal to appear (explicit wait)
+                    try:
+                        await browser_manager.page.wait_for_selector(
+                            ".el-dialog:has-text('Create a new survey'), .create-survey-dialog",
+                            timeout=15000
+                        )
+                    except Exception:
+                        print("⚠️ 'Create a new survey' 모달 대기 타임아웃")
                     
                     try:
                         survey_modal_visible = await site_detail_page.is_survey_creation_modal_visible()
@@ -132,7 +139,7 @@ async def test_add_plan_and_create_survey_flow(environment: str = "dev"):
                     # 페이지 새로고침 후 + New survey 버튼 찾기 시도
                     print("📝 페이지 새로고침 후 + New survey 버튼 찾기...")
                     await browser_manager.page.reload()
-                    await asyncio.sleep(3)
+                    await browser_manager.page.wait_for_load_state("networkidle", timeout=10000)
                     
                     # 현재 페이지 상태 확인을 위한 스크린샷
                     await browser_manager.take_screenshot("before_new_survey_attempt")
@@ -146,7 +153,7 @@ async def test_add_plan_and_create_survey_flow(environment: str = "dev"):
                             if new_survey_clicked:
                                 break
                             print(f"📝 {attempt + 1}번째 시도 실패, 잠시 대기...")
-                            await asyncio.sleep(2)
+                            await browser_manager.page.wait_for_timeout(500)
                         except Exception as e:
                             print(f"📝 {attempt + 1}번째 시도 중 오류: {e}")
                             await asyncio.sleep(2)

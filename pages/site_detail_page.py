@@ -954,14 +954,20 @@ class SiteDetailPage:
                 if not is_visible:
                     self.logger.warning("+ New survey button found but not visible")
                     return False
-                
+
                 # 3단계: 버튼 클릭
                 await new_survey_button.click()
                 self.logger.info("Clicked + New survey button")
-                
-                # 4단계: 모달이 나타날 때까지 대기
-                await asyncio.sleep(3)
-                
+
+                # 4단계: 모달이 나타날 때까지 명시적 대기 (하드 슬립 제거)
+                try:
+                    await self.page.wait_for_selector(
+                        self.selectors["new_survey_modal"],
+                        timeout=15000
+                    )
+                except Exception:
+                    self.logger.warning("New Survey modal not visible within timeout")
+
                 # 5단계: 모달이 나타났는지 확인
                 if await self.is_new_survey_modal_visible():
                     self.logger.info("New Survey modal appeared after button click")
@@ -993,7 +999,8 @@ class SiteDetailPage:
                         if close_button:
                             await close_button.click()
                             self.logger.info("Closed hidden modal")
-                            await asyncio.sleep(0.5)
+                            # 닫힘 반영 대기
+                            await self.page.wait_for_timeout(200)
                 except Exception as e:
                     continue
             
