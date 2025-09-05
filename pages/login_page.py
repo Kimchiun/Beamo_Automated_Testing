@@ -239,20 +239,19 @@ class LoginPage:
             return False
     
     async def take_login_screenshot(self, test_name: str = "login_page", status: str = "unknown") -> str:
-        """Take screenshot of login page with test name and status."""
+        """실패/에러 상태에서만 로그인 스크린샷 저장."""
         try:
-            # Create reports directory if it doesn't exist
+            if status not in ("failure", "error"):
+                self.logger.info(f"Skipping login screenshot for status '{status}'")
+                return ""
+
             from pathlib import Path
             from datetime import datetime
             screenshot_dir = Path(f"reports/{self.config.environment}/screenshots")
             screenshot_dir.mkdir(parents=True, exist_ok=True)
-            
-            # Generate filename with test name, status, and timestamp
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"{test_name}_{status}_{timestamp}.png"
             filepath = screenshot_dir / filename
-            
-            # Take screenshot
             await self.page.screenshot(path=str(filepath))
             self.logger.info(f"Screenshot saved: {filepath}")
             return str(filepath)

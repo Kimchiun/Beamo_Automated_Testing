@@ -887,21 +887,20 @@ class DashboardPage:
             return False
     
     async def take_dashboard_screenshot(self, test_name: str = "dashboard", status: str = "unknown") -> str:
-        """Take screenshot of dashboard with test name and status."""
-        import os
+        """실패/에러 상태에서만 대시보드 스크린샷 저장."""
         from pathlib import Path
         from datetime import datetime
         
-        # Create reports directory if it doesn't exist
-        reports_dir = Path("reports/dev/screenshots")
-        reports_dir.mkdir(parents=True, exist_ok=True)
+        if status not in ("failure", "error"):
+            self.logger.info(f"Skipping dashboard screenshot for status '{status}'")
+            return ""
         
-        # Generate filename with test name, status, and timestamp
+        reports_dir = Path(f"reports/{self.config.environment}/screenshots")
+        reports_dir.mkdir(parents=True, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"{test_name}_{status}_{timestamp}.png"
         screenshot_path = reports_dir / filename
         await self.page.screenshot(path=str(screenshot_path))
-        
         self.logger.info(f"Screenshot saved: {screenshot_path}")
         return str(screenshot_path)
     
