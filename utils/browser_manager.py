@@ -350,18 +350,9 @@ class BrowserManager:
                     
                     self.logger.info(f"Video file created for failed test: {video_filename}")
                 else:
-                    # For successful tests, ensure no videos are saved
-                    if os.path.exists(video_dir):
-                        video_files = [f for f in os.listdir(video_dir) if f.endswith('.webm')]
-                        if video_files:
-                            # Delete all videos for successful tests
-                            for video_file in video_files:
-                                video_path = os.path.join(video_dir, video_file)
-                                try:
-                                    os.remove(video_path)
-                                    self.logger.info(f"Video deleted for successful test: {video_file}")
-                                except Exception as e:
-                                    self.logger.warning(f"Failed to delete video {video_file}: {e}")
+                    # 성공한 테스트에서는 비디오를 생성/삭제하지 않음
+                    # (실패 테스트에서 생성된 비디오는 보존)
+                    pass
                 
             except Exception as e:
                 self.logger.warning(f"Failed to handle video in __aexit__: {e}")

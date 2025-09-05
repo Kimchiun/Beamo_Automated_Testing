@@ -40,6 +40,7 @@ Beamo_Automated_Testing/
 │   ├── smoke/                     # 스모크 테스트 (핵심 기능)
 │   │   ├── test_login.py         # 로그인 테스트
 │   │   ├── test_add_plan.py      # 플랜 추가 테스트
+│   │   ├── test_tag_test_search.py # 메인 검색창에서 "Tag Test" 검색→진입
 │   │   └── test_failure_example.py # 실패 테스트 예제
 │   ├── regression/                # 회귀 테스트 (전체 기능)
 │   └── analysis/                  # 분석 테스트 (디버깅용)
@@ -121,6 +122,9 @@ python -m pytest tests/smoke/ -v --tb=short
 
 # Phase 1: Dev 환경 특정 테스트
 python -m pytest tests/smoke/test_login.py::TestLoginSmoke::test_valid_login_dev -v
+
+# Tag Test 검색 시나리오 실행
+python -m pytest tests/smoke/test_tag_test_search.py::TestTagTestSearch::test_tag_test_search_and_enter -v
 
 # Phase 2: Stage 환경 테스트 (Dev 검증 후)
 python -m pytest tests/smoke/ -v --env stage
